@@ -28,7 +28,7 @@ Experience the foundations of modern computing through an interactive simulation
 - **Games**: Retro-style games for entertainment
 - **Assembly Programming**: Write and execute assembly programs
 
-### 🚀 No Programming Required
+### No Programming Required
 - Intuitive commands accessible for everyone
 - Perfect for beginners and computer science enthusiasts
 - Educational tutorials and sample programs included
@@ -85,7 +85,6 @@ This simulator implements the four core components of Von Neumann architecture:
 Perfect for:
 - Computer Science students learning architecture fundamentals
 - Anyone curious about how computers work at the basic level
-- Teachers looking for interactive ways to explain computing concepts
 - Retro computing enthusiasts
 
 ## Technology Stack
@@ -102,7 +101,7 @@ Named after mathematician John von Neumann, this revolutionary computer architec
 
 ## Contributing
 
-We welcome contributions! Feel free to:
+We welcome contributions - feel free to:
 - Report bugs
 - Suggest new features
 - Improve documentation
@@ -111,7 +110,7 @@ We welcome contributions! Feel free to:
 
 ## Created by Savoir Lab
 
-This project is created by **Savoir Lab** - developing human-centric technology that pushes human capacity to the max.
+This project is created by **Savoir Lab** - developing human-centric technology that pushes human capacity to the peak.
 
 *towards the peak human.*
 
@@ -120,5 +119,6 @@ This project is created by **Savoir Lab** - developing human-centric technology 
 MIT License - feel free to use this project for educational purposes.
 
 ---
+
 
 **Savoir Lab** | *Building the future of human potential*
