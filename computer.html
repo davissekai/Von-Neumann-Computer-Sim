@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Von Neumann Computer Simulator | Savoir Lab</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="computer-container">
+        <div class="monitor">
+            <div class="screen">
+                <div class="terminal" id="terminal">
+                    <div class="startup-sequence" id="startup">
+                        <div class="ascii-art">
+╔══════════════════════════════════════════════════════════════╗
+║  ██╗   ██╗ ██████╗ ███╗   ██╗    ███╗   ██╗███████╗██║   ██║ ║
+║  ██║   ██║██╔═══██╗████╗  ██║    ████╗  ██║██╔════╝██║   ██║ ║
+║  ██║   ██║██║   ██║██╔██╗ ██║    ██╔██╗ ██║█████╗  ██║   ██║ ║
+║  ╚██╗ ██╔╝██║   ██║██║╚██╗██║    ██║╚██╗██║██╔══╝  ██║   ██║ ║
+║   ╚████╔╝ ╚██████╔╝██║ ╚████║    ██║ ╚████║███████╗╚██████╔╝ ║
+║    ╚═══╝   ╚═════╝ ╚═╝  ╚═══╝    ╚═╝  ╚═══╝╚══════╝ ╚═════╝  ║
+║                                                              ║
+║              COMPUTER SIMULATOR v1.0                        ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+                        </div>
+                    </div>
+                    <div class="output" id="output"></div>
+                    <div class="input-line">
+                        <span class="prompt" id="prompt">VON-NEU> </span>
+                        <input type="text" id="command-input" autocomplete="off" spellcheck="false">
+                        <span class="cursor">█</span>
+                    </div>
+                </div>
+            </div>
+            <div class="monitor-base"></div>
+        </div>
+        
+        <div class="status-panel">
+            <div class="status-section">
+                <h3>Theme Selector</h3>
+                <select id="theme-selector" onchange="changeTheme(this.value)">
+                    <option value="grid">80s Grid</option>
+                    <option value="space">Space Stars</option>
+                    <option value="circuit">Circuit Board</option>
+                    <option value="matrix">Matrix Rain</option>
+                    <option value="neon">Neon City</option>
+                </select>
+            </div>
+            
+            <div class="status-section">
+                <h3>CPU Status</h3>
+                <div class="status-item">PC: <span id="pc">0000</span></div>
+                <div class="status-item">A: <span id="reg-a">00</span></div>
+                <div class="status-item">B: <span id="reg-b">00</span></div>
+                <div class="status-item">C: <span id="reg-c">00</span></div>
+                <div class="status-item">State: <span id="cpu-state">READY</span></div>
+            </div>
+            
+            <div class="status-section">
+                <h3>Memory</h3>
+                <div class="memory-viewer" id="memory-viewer">
+                    <!-- Memory will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <div class="status-section">
+                <h3>Quick Help</h3>
+                <div class="help-items">
+                    <div>create &lt;file&gt; - Make new file</div>
+                    <div>write &lt;file&gt; - Write text</div>
+                    <div>games - Play retro games</div>
+                    <div>calc - Calculator</div>
+                    <div>demo - See it work!</div>
+                    <div>help - Full commands</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File System Modal -->
+    <div class="modal" id="file-modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>File System</h2>
+            <div class="file-list" id="file-list"></div>
+        </div>
+    </div>
+
+    <!-- Text Editor Modal -->
+    <div class="modal" id="editor-modal">
+        <div class="modal-content editor-content">
+            <div class="editor-header">
+                <span>Simple Text Editor - <span id="editor-filename"></span></span>
+                <button class="save-btn" id="save-file">Save</button>
+                <span class="close">&times;</span>
+            </div>
+            <textarea id="editor-textarea" placeholder="Type your text here..."></textarea>
+        </div>
+    </div>
+
+    <!-- Games Modal -->
+    <div class="modal" id="games-modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Retro Games</h2>
+            <div class="games-list">
+                <button class="game-btn" onclick="startGame('guess')">Guess the Number</button>
+                <button class="game-btn" onclick="startGame('math')">Math Quiz</button>
+                <button class="game-btn" onclick="startGame('word')">Word Reverser</button>
+            </div>
+            <div class="game-area" id="game-area"></div>
+        </div>
+    </div>
+
+    <script src="von-neumann.js"></script>
+
+    <!-- Footer -->
+    <footer class="simulator-footer">
+        <div class="footer-content">
+            <div class="footer-left">
+                <div class="footer-logo">
+                    <span class="footer-logo-text">SAVOIR LAB</span>
+                    <div class="footer-tagline">Human-Centric Technology</div>
+                </div>
+            </div>
+            
+            <div class="footer-center">
+                <div class="footer-links">
+                    <a href="landing.html" class="footer-link">← Back to Landing</a>
+                    <a href="#" onclick="location.reload()" class="footer-link">Reset Computer</a>
+                    <a href="https://github.com" target="_blank" class="footer-link">Source Code</a>
+                </div>
+            </div>
+            
+            <div class="footer-right">
+                <div class="footer-info">
+                    <div class="footer-project">Von Neumann Computer Simulator</div>
+                    <div class="footer-year">© 2024 Savoir Lab</div>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

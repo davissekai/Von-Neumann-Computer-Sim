@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Von Neumann Computer Simulator | Savoir Lab</title>
+    <link rel="stylesheet" href="landing.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="landing-container">
+        <!-- Header -->
+        <header class="landing-header">
+            <div class="logo-section">
+                <div class="logo">
+                    <span class="logo-text">savoir lab</span>
+                    <div class="logo-tagline">towards the peak human</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="landing-main">
+            <div class="hero-section">
+                <div class="hero-content">
+                    <h1 class="hero-title">
+                        <span class="title-line">Von Neumann</span>
+                        <span class="title-line">Computer Simulator</span>
+                    </h1>
+                    
+                    <div class="hero-subtitle">
+                        Experience the foundations of modern computing through an interactive 
+                        simulation of the revolutionary Von Neumann architecture
+                    </div>
+
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">🖥️</div>
+                            <h3>Authentic Retro Interface</h3>
+                            <p>Classic green-on-black terminal with typewriter effects and nostalgic computing vibes</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon">⚙️</div>
+                            <h3>Educational Architecture</h3>
+                            <p>Learn about CPU, memory, I/O systems, and the stored-program concept that powers all computers</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon">🎮</div>
+                            <h3>Interactive Experience</h3>
+                            <p>Create files, write programs, play retro games, and explore computing fundamentals hands-on</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon">🚀</div>
+                            <h3>No Programming Required</h3>
+                            <p>Intuitive commands make it accessible for everyone, from beginners to computer science enthusiasts</p>
+                        </div>
+                    </div>
+
+                    <div class="cta-section">
+                        <button class="boot-button" onclick="bootComputer()">
+                            <span class="boot-text">BOOT COMPUTER</span>
+                            <div class="boot-subtitle">Launch Simulator</div>
+                        </button>
+                        
+                        <div class="quick-info">
+                            <div class="info-item">
+                                <strong>256 bytes</strong> unified memory
+                            </div>
+                            <div class="info-item">
+                                <strong>8-bit</strong> virtual CPU
+                            </div>
+                            <div class="info-item">
+                                <strong>Multiple</strong> retro themes
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-visual">
+                    <div class="computer-preview">
+                        <div class="preview-screen">
+                            <div class="preview-content">
+                                <div class="preview-line">╔══════════════════════════════════════╗</div>
+                                <div class="preview-line">║    VON NEUMANN COMPUTER SIMULATOR    ║</div>
+                                <div class="preview-line">╚══════════════════════════════════════╝</div>
+                                <div class="preview-line"></div>
+                                <div class="preview-line typing-demo">VON-NEU> help</div>
+                                <div class="preview-line">Available commands:</div>
+                                <div class="preview-line">• create &lt;file&gt; - Make new file</div>
+                                <div class="preview-line">• games - Play retro games</div>
+                                <div class="preview-line">• calc - Calculator</div>
+                                <div class="preview-line">• demo - See it work!</div>
+                                <div class="preview-cursor">█</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Section -->
+            <section class="about-section">
+                <div class="about-content">
+                    <h2>About the Von Neumann Architecture</h2>
+                    <p>
+                        Named after mathematician John von Neumann, this revolutionary computer architecture introduced 
+                        the concept of stored-program computers where both data and instructions are stored in the same memory. 
+                        This fundamental design principle still powers every modern computer, smartphone, and digital device today.
+                    </p>
+                    
+                    <div class="architecture-features">
+                        <div class="arch-feature">
+                            <h4>Unified Memory</h4>
+                            <p>Single memory space for both program instructions and data</p>
+                        </div>
+                        <div class="arch-feature">
+                            <h4>Central Processing Unit</h4>
+                            <p>Control unit and arithmetic logic unit working together</p>
+                        </div>
+                        <div class="arch-feature">
+                            <h4>Input/Output System</h4>
+                            <p>Interface for communication with the outside world</p>
+                        </div>
+                        <div class="arch-feature">
+                            <h4>Bus System</h4>
+                            <p>Data pathways connecting all computer components</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="landing-footer">
+            <div class="footer-content">
+                <div class="footer-center">
+                    <div class="footer-section">
+                        <h4>Project</h4>
+                        <ul>
+                            <li><a href="#" onclick="bootComputer()">Launch Simulator</a></li>
+                            <li><a href="https://github.com" target="_blank">Source Code</a></li>
+                            <li><a href="#about">About</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <div class="footer-year">© 2025 Savoir Lab. All rights reserved.</div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        function bootComputer() {
+            // Add boot animation
+            const bootButton = document.querySelector('.boot-button');
+            bootButton.classList.add('booting');
+            bootButton.innerHTML = '<span class="boot-text">BOOTING...</span><div class="boot-subtitle">Initializing system</div>';
+            
+            // Simulate boot delay then redirect
+            setTimeout(() => {
+                window.location.href = 'computer.html';
+            }, 2000);
+        }
+
+        // Typing animation for preview
+        document.addEventListener('DOMContentLoaded', function() {
+            const typingDemo = document.querySelector('.typing-demo');
+            const originalText = typingDemo.textContent;
+            typingDemo.textContent = 'VON-NEU> ';
+            
+            let i = 'VON-NEU> '.length;
+            function typeCharacter() {
+                if (i < originalText.length) {
+                    typingDemo.textContent = originalText.substring(0, i + 1);
+                    i++;
+                    setTimeout(typeCharacter, 100);
+                } else {
+                    // Restart after delay
+                    setTimeout(() => {
+                        typingDemo.textContent = 'VON-NEU> ';
+                        i = 'VON-NEU> '.length;
+                        setTimeout(typeCharacter, 1000);
+                    }, 3000);
+                }
+            }
+            
+            setTimeout(typeCharacter, 2000);
+        });
+    </script>
+</body>
+</html>
