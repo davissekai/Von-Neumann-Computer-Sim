@@ -34,7 +34,12 @@ HALT`);
     setupEventListeners() {
         const input = document.getElementById('command-input');
         input.addEventListener('keydown', (e) => this.handleKeyDown(e));
-        input.focus();
+        
+        // Mobile-specific enhancements
+        this.setupMobileEnhancements(input);
+        
+        // Focus handling for mobile
+        this.setupFocusHandling(input);
         
         document.querySelectorAll('.close').forEach(closeBtn => {
             closeBtn.addEventListener('click', (e) => {
@@ -47,6 +52,102 @@ HALT`);
                 e.target.style.display = 'none';
             }
         });
+    }
+    
+    setupMobileEnhancements(input) {
+        // Detect if device is mobile
+        this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                       ('ontouchstart' in window) || 
+                       (navigator.maxTouchPoints > 0);
+        
+        if (this.isMobile) {
+            // Add touch-friendly virtual keyboard
+            this.createVirtualKeyboard();
+            
+            // Prevent zoom on double tap
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(e) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+            
+            // Auto-focus input on screen tap
+            document.addEventListener('touchstart', () => {
+                if (document.activeElement !== input) {
+                    input.focus();
+                }
+            });
+        }
+    }
+    
+    createVirtualKeyboard() {
+        const keyboardContainer = document.createElement('div');
+        keyboardContainer.className = 'virtual-keyboard';
+        keyboardContainer.innerHTML = `
+            <div class="keyboard-row">
+                <button class="key-btn" data-key="help">help</button>
+                <button class="key-btn" data-key="clear">clear</button>
+                <button class="key-btn" data-key="dir">dir</button>
+                <button class="key-btn" data-key="games">games</button>
+            </div>
+            <div class="keyboard-row">
+                <button class="key-btn" data-key="create ">create</button>
+                <button class="key-btn" data-key="write ">write</button>
+                <button class="key-btn" data-key="type ">type</button>
+                <button class="key-btn" data-key="demo">demo</button>
+            </div>
+        `;
+        
+        document.body.appendChild(keyboardContainer);
+        
+        // Add event listeners to virtual keyboard
+        keyboardContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('key-btn')) {
+                const input = document.getElementById('command-input');
+                const command = e.target.dataset.key;
+                input.value = command;
+                input.focus();
+                
+                // If it's a complete command, execute it
+                if (!command.endsWith(' ')) {
+                    this.executeCommand(command);
+                    input.value = '';
+                }
+            }
+        });
+    }
+    
+    setupFocusHandling(input) {
+        // Keep input focused on mobile
+        if (this.isMobile) {
+            input.focus();
+            
+            // Re-focus when modal closes
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal') || e.target.classList.contains('close')) {
+                    setTimeout(() => input.focus(), 100);
+                }
+            });
+            
+            // Focus after theme change
+            const themeSelector = document.getElementById('theme-selector');
+            if (themeSelector) {
+                themeSelector.addEventListener('change', () => {
+                    setTimeout(() => input.focus(), 100);
+                });
+            }
+        } else {
+            input.focus();
+        }
     }
     
     displayStartupSequence() {

@@ -503,25 +503,287 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    body {
+        overflow-x: hidden;
+        overflow-y: auto;
+        height: auto;
+        min-height: 100vh;
+    }
+    
     .computer-container {
         flex-direction: column;
+        padding: 10px;
+        gap: 15px;
+        height: auto;
+        min-height: calc(100vh - 80px);
     }
     
     .status-panel {
         max-width: none;
         order: -1;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .status-section {
+        margin-bottom: 15px;
+    }
+    
+    .status-section h3 {
+        font-size: 14px;
+    }
+    
+    .help-items {
+        font-size: 10px;
     }
     
     .screen {
         height: 400px;
+        max-width: none;
+        width: calc(100% - 20px);
+        border: 8px solid #444;
+        border-radius: 10px;
+        margin: 0 auto;
     }
     
     .ascii-art {
-        font-size: 8px;
+        font-size: 6px;
+        margin-bottom: 15px;
     }
     
     .terminal {
+        font-size: 11px;
+        padding: 15px;
+        line-height: 1.3;
+    }
+    
+    .input-line {
+        position: relative;
+        background: rgba(0, 0, 0, 0.9);
+        padding: 8px 0;
+        margin-top: 10px;
+    }
+    
+    #command-input {
         font-size: 12px;
+        padding: 2px;
+        width: 100%;
+        border: 1px solid rgba(0, 255, 0, 0.3);
+        border-radius: 3px;
+        background: rgba(0, 0, 0, 0.8);
+    }
+    
+    .prompt {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 11px;
+    }
+    
+    .monitor-base {
+        width: 100%;
+        height: 20px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 2% auto;
+        padding: 15px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .editor-content {
+        height: 60vh;
+    }
+    
+    #editor-textarea {
+        font-size: 12px;
+    }
+    
+    .games-list {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .game-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    .memory-viewer {
+        font-size: 9px;
+        max-height: 100px;
+    }
+    
+    #theme-selector {
+        font-size: 12px;
+        padding: 8px;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    .computer-container {
+        padding: 5px;
+        gap: 10px;
+    }
+    
+    .screen {
+        height: 300px;
+        border: 5px solid #444;
+        border-radius: 8px;
+    }
+    
+    .ascii-art {
+        font-size: 4px;
+        margin-bottom: 10px;
+    }
+    
+    .terminal {
+        font-size: 10px;
+        padding: 10px;
+    }
+    
+    .status-panel {
+        padding: 8px;
+    }
+    
+    .status-section h3 {
+        font-size: 12px;
+    }
+    
+    .help-items {
+        font-size: 9px;
+    }
+    
+    .modal-content {
+        width: 98%;
+        padding: 10px;
+    }
+    
+    .editor-content {
+        height: 50vh;
+    }
+    
+    #editor-textarea {
+        font-size: 11px;
+        padding: 8px;
+    }
+    
+    .memory-viewer {
+        font-size: 8px;
+        max-height: 80px;
+    }
+    
+    .output {
+        min-height: 200px;
+    }
+    
+    .input-line {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .cursor {
+        margin-left: 5px;
+    }
+}
+
+/* Virtual Keyboard for Mobile */
+.virtual-keyboard {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.95);
+    border-top: 2px solid #00ff00;
+    padding: 10px;
+    z-index: 1000;
+    display: none;
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    gap: 5px;
+}
+
+.key-btn {
+    flex: 1;
+    background: #000;
+    color: #00ff00;
+    border: 1px solid #00ff00;
+    border-radius: 5px;
+    padding: 12px 8px;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+.key-btn:hover,
+.key-btn:focus {
+    background: #00ff00;
+    color: #000;
+    outline: none;
+}
+
+.key-btn:active {
+    transform: scale(0.95);
+    background: #00cc00;
+    color: #000;
+}
+
+/* Show virtual keyboard on mobile */
+@media (hover: none) and (pointer: coarse) {
+    .virtual-keyboard {
+        display: block;
+    }
+    
+    body {
+        padding-bottom: 120px;
+    }
+    
+    .computer-container {
+        padding-bottom: 130px;
+    }
+}
+
+/* Touch-friendly enhancements */
+@media (hover: none) and (pointer: coarse) {
+    .game-btn,
+    .save-btn,
+    .file-item,
+    .footer-link {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    #theme-selector {
+        min-height: 44px;
+        font-size: 14px;
+    }
+    
+    #command-input {
+        min-height: 40px;
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 8px;
+    }
+    
+    .close {
+        font-size: 32px;
+        padding: 10px;
+        min-width: 44px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }
 
