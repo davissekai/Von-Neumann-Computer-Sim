@@ -112,13 +112,10 @@ We welcome contributions - feel free to:
 
 This project is created by **Savoir Lab** - developing human-centric technology that pushes human capacity to the peak.
 
-*towards the peak human.*
 
-## License
-
-MIT License - feel free to use this project for educational purposes.
 
 ---
 
 
 **Savoir Lab** | *Building the future of human potential*
+
