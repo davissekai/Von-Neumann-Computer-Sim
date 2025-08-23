@@ -582,7 +582,7 @@ Type "sound" to toggle sound effects`;
 
      RETRO COMPUTING VIBES
         ┌────────────────┐
-        │  SAVOIR LAB  │
+        │  savoir lab  │
         └────────────────┘
 `;
         await this.typeMessage(art, 'highlight', 15);
@@ -717,4 +717,5 @@ window.addEventListener('load', function() {
         selector.value = savedTheme;
         changeTheme(savedTheme);
     }
+
 });
