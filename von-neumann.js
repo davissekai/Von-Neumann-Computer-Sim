@@ -199,11 +199,9 @@ for i in range(10):
                 lastTouchEnd = now;
             }, false);
             
-            // Auto-focus input on screen tap
-            document.addEventListener('touchstart', () => {
-                if (document.activeElement !== input) {
-                    input.focus();
-                }
+            // Only focus input when user specifically taps the input area
+            input.addEventListener('focus', () => {
+                input.scrollIntoView({ behavior: 'smooth', block: 'center' });
             });
         }
     }
@@ -683,6 +681,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set default theme
     changeTheme('grid');
 });
+
+// Focus input function for mobile
+function focusInput() {
+    const input = document.getElementById('command-input');
+    input.focus();
+    // Scroll input into view
+    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
 
 // Theme switching function
 function changeTheme(theme) {
