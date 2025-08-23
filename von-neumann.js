@@ -9,10 +9,67 @@ class VonNeumannComputer {
         this.fileSystem = new Map();
         this.commandHistory = [];
         this.historyIndex = -1;
+        this.soundEnabled = true;
         
         this.initializeFileSystem();
         this.setupEventListeners();
+        this.initializeSounds();
         this.displayStartupSequence();
+    }
+    
+    initializeSounds() {
+        // Create audio context for retro sound effects
+        this.audioContext = null;
+        try {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            console.log('Audio not supported');
+            this.soundEnabled = false;
+        }
+    }
+    
+    playSound(frequency = 440, duration = 100, type = 'square') {
+        if (!this.soundEnabled || !this.audioContext) return;
+        
+        try {
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + duration / 1000);
+            
+            oscillator.start(this.audioContext.currentTime);
+            oscillator.stop(this.audioContext.currentTime + duration / 1000);
+        } catch (e) {
+            // Silent fail for sound issues
+        }
+    }
+    
+    playBootSound() {
+        // Classic computer boot sound sequence
+        setTimeout(() => this.playSound(220, 150), 0);
+        setTimeout(() => this.playSound(330, 150), 200);
+        setTimeout(() => this.playSound(440, 150), 400);
+        setTimeout(() => this.playSound(550, 300), 600);
+    }
+    
+    playKeyPressSound() {
+        this.playSound(800, 50, 'square');
+    }
+    
+    playErrorSound() {
+        this.playSound(150, 200, 'sawtooth');
+    }
+    
+    playSuccessSound() {
+        setTimeout(() => this.playSound(440, 100), 0);
+        setTimeout(() => this.playSound(660, 150), 120);
     }
     
     initializeFileSystem() {
@@ -23,12 +80,74 @@ Try these commands:
 - games (play retro games)  
 - calc (calculator)
 - create test.txt (make a new file)
-- demo (see a working program)`);
+- demo (see a working program)
+- tutorial (interactive learning)
+- samples (view sample programs)`);
 
         this.fileSystem.set('hello.asm', `; Hello World Program
 LOAD A, #72
 OUTPUT A
 HALT`);
+        
+        this.fileSystem.set('tutorial.txt', `=== VON NEUMANN ARCHITECTURE TUTORIAL ===
+
+1. MEMORY: Stores both programs and data
+   - Try: create mydata.txt
+   - Try: write mydata.txt
+
+2. CPU: Executes instructions step by step
+   - Try: status (see CPU state)
+   - Try: demo (see CPU in action)
+
+3. I/O: Input/Output operations
+   - Try: type readme.txt (input from file)
+   - Try: calc 5+3 (output result)
+
+4. PROGRAMMING: Write simple programs
+   - Try: samples (see example programs)
+   - Try: editor myprogram.txt
+
+Type 'interactive' for hands-on learning!`);
+        
+        this.fileSystem.set('samples.txt', `=== SAMPLE PROGRAMS ===
+
+1. FIBONACCI SEQUENCE:
+   create fib.txt
+   write fib.txt
+   (Enter: 1, 1, 2, 3, 5, 8, 13...)
+
+2. CALCULATOR PROGRAMS:
+   calc 2+2
+   calc 10*5
+   calc 100/4
+
+3. FILE OPERATIONS:
+   create notes.txt
+   write notes.txt
+   type notes.txt
+   
+4. ASCII ART:
+   banner HELLO
+   ascii
+   
+5. SYSTEM INFO:
+   time
+   date
+   status
+
+Try any of these to learn computing basics!`);
+        
+        this.fileSystem.set('fibonacci.py', `# Fibonacci Calculator
+# A classic computer science algorithm
+
+def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+
+# Calculate first 10 numbers
+for i in range(10):
+    print(f"F({i}) = {fibonacci(i)}")`);
     }
     
     setupEventListeners() {
@@ -151,6 +270,7 @@ HALT`);
     }
     
     displayStartupSequence() {
+        this.playBootSound();
         setTimeout(() => {
             document.getElementById('startup').style.display = 'none';
             this.showBootMessages();
@@ -218,6 +338,7 @@ HALT`);
     }
     
     async executeCommand(commandLine) {
+        this.playKeyPressSound();
         await this.typeMessage(`VON-NEU> ${commandLine}`, 'highlight', 5);
         
         const parts = commandLine.split(' ');
@@ -243,7 +364,13 @@ HALT`);
             case 'games': this.openGames(); break;
             case 'hello': this.showHelloWorld(); break;
             case 'banner': this.createBanner(args); break;
+            case 'sound': this.toggleSound(); break;
+            case 'ascii': this.showASCIIArt(); break;
+            case 'tutorial': this.startTutorial(); break;
+            case 'samples': this.showSamples(); break;
+            case 'interactive': this.startInteractiveTutorial(); break;
             default:
+                this.playErrorSound();
                 await this.typeMessage(`ERROR: Unknown command: ${command}`, 'error');
                 await this.typeMessage('Type "help" for available commands.', 'info');
         }
@@ -255,10 +382,13 @@ HALT`);
 
 FILES: create, write, type, dir, delete, editor
 COMPUTER: status, reset, demo, calc
-FUN: games, hello, banner, time, date
-SYSTEM: help, clear, about
+LEARNING: tutorial, samples, interactive
+FUN: games, hello, banner, time, date, ascii
+SYSTEM: help, clear, about, sound
 
-Try: create test.txt, games, calc 2+2, demo`;
+NEW USER? Try: interactive
+Quick start: tutorial, samples, demo
+Type "sound" to toggle sound effects`;
         
         await this.typeMessage(helpText, 'success', 3);
     }
@@ -289,6 +419,7 @@ Try: create test.txt, games, calc 2+2, demo`;
         }
         
         this.fileSystem.set(filename, '');
+        this.playSuccessSound();
         await this.typeMessage(`SUCCESS: File '${filename}' created!`, 'success');
     }
     
@@ -424,6 +555,75 @@ Try: create test.txt, games, calc 2+2, demo`;
 ║  ${text}  ║
 ╚${'═'.repeat(text.length + 4)}╝`;
         await this.typeMessage(banner, 'highlight', 25);
+    }
+    
+    async toggleSound() {
+        this.soundEnabled = !this.soundEnabled;
+        if (this.soundEnabled) {
+            this.playSuccessSound();
+            await this.typeMessage('Sound effects: ENABLED', 'success');
+        } else {
+            await this.typeMessage('Sound effects: DISABLED', 'info');
+        }
+    }
+    
+    async showASCIIArt() {
+        const art = `
+░░░░░█████░░░░░░█████░░░░░
+░░░██░░░░░██░░██░░░░░██░░░
+░░██░░░░░░░██░██░░░░░░░██░
+░██░░░░░░░░░████░░░░░░░░██
+██░░░░░░░░░░░██░░░░░░░░░░██
+██░░░░░░░░░░░██░░░░░░░░░░██
+░██░░░░░░░░░████░░░░░░░░██
+░░██░░░░░░░██░██░░░░░░░██
+░░░██░░░░░██░░██░░░░░██░
+░░░░░█████░░░░░░█████░░░
+
+     RETRO COMPUTING VIBES
+        ┌────────────────┐
+        │  SAVOIR LAB  │
+        └────────────────┘
+`;
+        await this.typeMessage(art, 'highlight', 15);
+    }
+    
+    async startTutorial() {
+        await this.typeMessage('Opening tutorial...', 'info');
+        await this.displayFile(['tutorial.txt']);
+    }
+    
+    async showSamples() {
+        await this.typeMessage('Loading sample programs...', 'info');
+        await this.displayFile(['samples.txt']);
+    }
+    
+    async startInteractiveTutorial() {
+        await this.typeMessage('=== INTERACTIVE TUTORIAL ===', 'highlight');
+        await this.typeMessage('Let\'s learn by doing! Follow along:', 'info');
+        await this.delay(1000);
+        
+        await this.typeMessage('\nSTEP 1: Create your first file', 'success');
+        await this.typeMessage('Type: create myfile.txt', 'info');
+        await this.delay(2000);
+        
+        await this.typeMessage('\nSTEP 2: List files to see it', 'success');
+        await this.typeMessage('Type: dir', 'info');
+        await this.delay(2000);
+        
+        await this.typeMessage('\nSTEP 3: Add content to your file', 'success');
+        await this.typeMessage('Type: write myfile.txt', 'info');
+        await this.delay(2000);
+        
+        await this.typeMessage('\nSTEP 4: Read your file back', 'success');
+        await this.typeMessage('Type: type myfile.txt', 'info');
+        await this.delay(2000);
+        
+        await this.typeMessage('\nCONGRATULATIONS! 🎉', 'highlight');
+        await this.typeMessage('You\'ve learned the basics of file operations!', 'success');
+        await this.typeMessage('Try "games" for fun or "demo" to see the CPU work!', 'info');
+        
+        this.playSuccessSound();
     }
     
     updateStatus() {
