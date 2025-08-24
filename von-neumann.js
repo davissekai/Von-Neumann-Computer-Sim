@@ -284,8 +284,8 @@ for i in range(10):
             '[SETTING UP I/O SUBSYSTEM... OK]',
             '[SYSTEM READY]',
             '',
-            'Greetings,\n I am Von, your personal computer - built by my master, Renhuang Davis.',
-            'Try "create myfile.txt" to make a file, "games" for recreation, or "demo" to see it work.',
+            'Greetings,\n I am Von Neu, your personal retro computer - built by my master, Renhuang Dey.',
+            'Try "create myfile.txt" to make a file, "games" for recreation, or "demo" to see how I work.',
             'Type "help" anytime to see what you can do.\n Now, you may enjoy my master\'s creation. ',
             ''
         ];
@@ -725,3 +725,4 @@ window.addEventListener('load', function() {
     }
 
 });
+
