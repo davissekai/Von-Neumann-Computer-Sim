@@ -23,6 +23,7 @@ from retro_terminal import RetroTerminal
 from assembler import Assembler
 from memory_viewer import MemoryViewer
 from io_system import IOSystem
+from von_neu_ai import VonNeuAI
 
 class VonNeumannSimulator:
     def __init__(self):
@@ -33,6 +34,15 @@ class VonNeumannSimulator:
         self.assembler = Assembler()
         self.memory_viewer = MemoryViewer(self.memory, self.cpu)
         self.io_system = IOSystem(self.terminal)
+        
+        # Initialize Von Neu AI
+        try:
+            self.von_neu = VonNeuAI()
+            self.von_neu_available = True
+        except Exception as e:
+            self.terminal.print_warning(f"Von Neu AI initialization failed: {e}")
+            self.von_neu = None
+            self.von_neu_available = False
         
         # Current state
         self.running = True
@@ -113,6 +123,13 @@ class VonNeumannSimulator:
             'games': self.cmd_games,
             'hello': self.cmd_hello_world,
             'banner': self.cmd_banner,
+            
+            # Von Neu AI Chat Commands
+            'chat': self.cmd_chat,
+            'von-neu': self.cmd_von_neu_status,
+            'von-neu-status': self.cmd_von_neu_status,
+            'von-neu-clear': self.cmd_von_neu_clear,
+            'von-neu-greeting': self.cmd_von_neu_greeting,
         }
         
     def start(self):
@@ -129,6 +146,19 @@ class VonNeumannSimulator:
             "Try 'create myfile.txt' to make a file, 'games' for fun, or 'demo' to see it work",
             color="yellow"
         )
+        
+        # Von Neu introduction
+        if self.von_neu_available:
+            self.terminal.typewriter_print(
+                "🤖 NEW: Chat with Von Neu, your AI companion! Try 'chat Hello Von Neu'",
+                color="green"
+            )
+        else:
+            self.terminal.typewriter_print(
+                "💡 TIP: Set up Von Neu AI chat - see VON_NEU_SETUP.md for instructions",
+                color="yellow"
+            )
+            
         self.terminal.typewriter_print(
             "Type 'help' anytime to see what you can do. No programming knowledge required!",
             color="green"
@@ -1233,6 +1263,94 @@ For more commands, type 'help'
 ╚{border}╝
             """
             self.terminal.typewriter_print(banner, delay=0.01, color="yellow")
+    
+    # ===== VON NEU AI CHAT COMMANDS =====
+    
+    def cmd_chat(self, args: List[str]):
+        """Chat with Von Neu AI"""
+        if not self.von_neu_available:
+            self.terminal.print_error("Von Neu AI is not available")
+            self.terminal.print_info("Please check your API key configuration in .env file")
+            self.terminal.print_info("See VON_NEU_SETUP.md for setup instructions")
+            return
+            
+        if not args:
+            self.terminal.print_error("Usage: chat <your message>")
+            self.terminal.print_info("Example: chat Hello Von Neu, how are you?")
+            return
+            
+        user_message = ' '.join(args)
+        
+        # Show user's message
+        self.terminal.typewriter_print(f"YOU: {user_message}", color="cyan")
+        self.terminal.print_info("Von Neu is thinking...")
+        
+        try:
+            # Get response from Von Neu
+            if self.von_neu:
+                response = self.von_neu.chat(user_message)
+            else:
+                response = "Von Neu AI is not available"
+            
+            # Display Von Neu's response with retro styling
+            self.terminal.show_separator()
+            self.terminal.typewriter_print("VON NEU:", color="yellow", delay=0.02)
+            self.terminal.typewriter_print(response, color="green", delay=0.03)
+            self.terminal.show_separator()
+            
+        except Exception as e:
+            self.terminal.print_error(f"Chat error: {e}")
+    
+    def cmd_von_neu_status(self, args: List[str]):
+        """Show Von Neu AI status"""
+        if not self.von_neu_available or not self.von_neu:
+            self.terminal.print_error("Von Neu AI is not available")
+            return
+            
+        status = self.von_neu.get_status()
+        
+        self.terminal.show_separator()
+        self.terminal.typewriter_print("=== VON NEU AI STATUS ===", color="yellow")
+        
+        # API Status
+        api_status = "CONNECTED" if status['api_connected'] else "OFFLINE"
+        status_color = "green" if status['api_connected'] else "red"
+        self.terminal.typewriter_print(f"API Status: {api_status}", color=status_color)
+        
+        # Model Info
+        self.terminal.print_info(f"Model: {status['model']}")
+        
+        # Conversation Stats
+        self.terminal.print_info(f"Conversation History: {status['conversation_length']} exchanges")
+        self.terminal.print_info(f"Rate Limit Remaining: {status['rate_limit_remaining']} requests")
+        
+        # Von Neu Character Info
+        self.terminal.typewriter_print("\nCharacter Profile:", color="cyan")
+        self.terminal.print_info("• Era: 1970s-80s vintage computer")
+        self.terminal.print_info("• Creator: Renhuang Dey")
+        self.terminal.print_info("• Personality: Confused time traveler")
+        self.terminal.print_info("• Knowledge: Pre-1980s computing only")
+        
+        self.terminal.show_separator()
+    
+    def cmd_von_neu_clear(self, args: List[str]):
+        """Clear Von Neu conversation history"""
+        if not self.von_neu_available or not self.von_neu:
+            self.terminal.print_error("Von Neu AI is not available")
+            return
+            
+        self.von_neu.clear_history()
+        self.terminal.print_success("Von Neu's memory has been reset")
+        self.terminal.print_info("Starting fresh conversation...")
+    
+    def cmd_von_neu_greeting(self, args: List[str]):
+        """Show Von Neu's startup greeting"""
+        if not self.von_neu_available or not self.von_neu:
+            self.terminal.print_error("Von Neu AI is not available")
+            return
+            
+        greeting = self.von_neu.get_startup_greeting()
+        self.terminal.typewriter_print(greeting, color="green", delay=0.02)
 
 def main():
     """Main entry point"""

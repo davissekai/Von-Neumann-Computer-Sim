@@ -1,0 +1,11 @@
+# Von Neumann Computer Simulator Dependencies
+# Core functionality
+rich>=13.0.0
+colorama>=0.4.6
+
+# Von Neu AI Chat
+requests>=2.28.0
+python-dotenv>=1.0.0
+
+# Optional: For enhanced terminal features
+blessed>=1.20.0

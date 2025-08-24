@@ -27,6 +27,14 @@ Experience the foundations of modern computing through an interactive simulation
 - **Calculator**: Hex/binary support for mathematical operations
 - **Games**: Retro-style games for entertainment
 - **Assembly Programming**: Write and execute assembly programs
+- **🤖 Von Neu AI Chat**: Chat with your retro AI companion!
+
+### 🤖 NEW: Von Neu AI Companion
+- **Vintage Personality**: A charming 1970s-80s computer with mysterious modern abilities
+- **Creator Proud**: Built by Renhuang Dey and proud of it!
+- **Time Traveler**: Confused but fascinated by modern technology
+- **Authentic Responses**: Uses only vintage computing terminology
+- **Educational**: Learn about computing history through conversation
 
 ### No Programming Required
 - Intuitive commands accessible for everyone
@@ -47,9 +55,20 @@ Experience the foundations of modern computing through an interactive simulation
 git clone https://github.com/your-username/von-neumann-computer.git
 cd von-neumann-computer
 
+# Install dependencies
+pip install -r requirements.txt
+
+# Setup Von Neu AI (optional but recommended)
+python setup_von_neu.py
+
 # Run the simulator
 python main_interface.py
+
+# Try the new AI chat feature!
+VON-NEU> chat Hello Von Neu, who are you?
 ```
+
+🤖 **NEW**: Chat with Von Neu, your retro AI companion! See `GETTING_STARTED.md` for full setup guide.
 
 ## Available Commands
 
@@ -66,6 +85,8 @@ python main_interface.py
 | `calc` | Open calculator |
 | `games` | Play retro games |
 | `demo` | See the computer in action |
+| `chat <message>` | 🤖 Chat with Von Neu AI |
+| `von-neu-status` | Check AI companion status |
 | `cpu` | Show CPU status |
 | `memory` | View memory contents |
 | `clear` | Clear the screen |

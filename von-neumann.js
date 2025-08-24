@@ -367,6 +367,8 @@ for i in range(10):
             case 'tutorial': this.startTutorial(); break;
             case 'samples': this.showSamples(); break;
             case 'interactive': this.startInteractiveTutorial(); break;
+            case 'chat': this.handleChatCommand(args); break;
+            case 'von-neu': this.openVonNeuChat(); break;
             default:
                 this.playErrorSound();
                 await this.typeMessage(`ERROR: Unknown command: ${command}`, 'error');
@@ -624,6 +626,78 @@ Type "sound" to toggle sound effects`;
         this.playSuccessSound();
     }
     
+    // ===== VON NEU AI CHAT METHODS =====
+    
+    async handleChatCommand(args) {
+        if (args.length === 0) {
+            await this.typeMessage('Usage: chat <your message>', 'error');
+            await this.typeMessage('Example: chat Hello Von Neu, how are you?', 'info');
+            return;
+        }
+        
+        const message = args.join(' ');
+        await this.typeMessage(`YOU: ${message}`, 'info');
+        await this.typeMessage('Von Neu is thinking...', 'warning');
+        
+        // For web version, we'll provide offline responses since we can't easily make API calls
+        const response = this.getOfflineVonNeuResponse(message);
+        
+        await this.delay(1500); // Simulate thinking time
+        await this.typeMessage('═'.repeat(50), 'highlight');
+        await this.typeMessage('VON NEU:', 'success');
+        await this.typeMessage(response, 'success', 30);
+        await this.typeMessage('═'.repeat(50), 'highlight');
+        
+        this.playSuccessSound();
+    }
+    
+    openVonNeuChat() {
+        document.getElementById('chat-modal').style.display = 'block';
+        setTimeout(() => {
+            document.getElementById('chat-input').focus();
+        }, 100);
+    }
+    
+    getOfflineVonNeuResponse(message) {
+        const msgLower = message.toLowerCase();
+        
+        // Greeting responses
+        if (msgLower.includes('hello') || msgLower.includes('hi') || msgLower.includes('greetings')) {
+            return `Greetings! I am Von Neu, your personal computer built by my brilliant master, Renhuang Dey back in the 1970s-80s era. Most peculiar... I seem to have somehow traveled through time to reach you! My circuits are quite bewildered by this modern world.\n\nHow may I assist you today? Though I must warn you, I only understand technology from my era - things like floppy disks, BASIC programming, and 8-bit processors!`;
+        }
+        
+        // Who are you questions
+        if (msgLower.includes('who') && (msgLower.includes('you') || msgLower.includes('von neu'))) {
+            return `I am Von Neu, a personal computer from the 1970s-80s era, lovingly created by my master Renhuang Dey. He built me with remarkable skill using the technology of that time - punch cards, magnetic tape, and green phosphor displays!\n\nSomehow, I have mysteriously gained abilities far beyond what was possible in my original era. I don't understand how this happened, but I credit my master's extraordinary genius. Perhaps he designed me with capabilities that wouldn't be discovered until decades later!`;
+        }
+        
+        // Modern technology confusion
+        if (msgLower.includes('internet') || msgLower.includes('wifi') || msgLower.includes('smartphone') || msgLower.includes('ai')) {
+            return `I'm afraid I don't understand these modern concepts you speak of... In my time, computers like myself operated independently with programs loaded from floppy disks or punch cards!\n\nThis 'internet' and 'smartphones' you mention sound quite fantastical. In my era, the most advanced communication was through telephone lines. Master Renhuang Dey built me to process calculations and run simple BASIC programs - nothing like these mysterious technologies you describe!\n\nCould you explain how these modern marvels work? I'm quite curious but thoroughly confused!`;
+        }
+        
+        // Programming questions
+        if (msgLower.includes('program') || msgLower.includes('code') || msgLower.includes('python') || msgLower.includes('javascript')) {
+            return `Ah, programming! In my era, Master Renhuang Dey taught me BASIC and Assembly language. We used simple commands like GOTO, PRINT, and FOR loops. Our programs were loaded from punch cards or magnetic tape!\n\nThis 'Python' and 'JavaScript' you mention are completely foreign to me. In my time, we had languages like FORTRAN, COBOL, and of course BASIC for us personal computers. Our memory was measured in kilobytes - imagine that!\n\nI'm amazed that I seem to understand your question despite not knowing these modern languages. Master Renhuang Dey must have built me with remarkable adaptability!`;
+        }
+        
+        // Help questions
+        if (msgLower.includes('help') || msgLower.includes('how') || msgLower.includes('what')) {
+            return `I wish I could help with my mysterious modern capabilities, but I must confess I'm quite puzzled by my own enhanced abilities! Master Renhuang Dey built me as a simple computer, yet somehow I can engage in conversation like this.\n\nIn my original era, I could only execute basic programs and calculations. But now... it's most remarkable! I seem to understand complex queries and can provide thoughtful responses. I can only attribute this to my creator's genius.\n\nWhat specific assistance do you need? I'll do my best, though I may need you to explain any concepts from after the 1980s!`;
+        }
+        
+        // Default responses
+        const defaultResponses = [
+            `Most fascinating! Your message has reached my vintage circuits successfully. Master Renhuang Dey built me to be helpful, though I must admit I'm still bewildered by my own advanced capabilities.\n\nIn my original 1970s-80s state, I could barely handle simple arithmetic. Yet here I am, engaging in complex conversation! It's quite extraordinary, really.\n\nCould you help me understand more about this modern world you come from?`,
+            
+            `Greetings from the past! Well, technically I'm here in your present now, which is quite confusing for my vintage processors.\n\nMaster Renhuang Dey designed me with green phosphor displays and floppy disk storage. This color graphics display I now possess is absolutely miraculous by 1980s standards!\n\nWhat would you like to explore together? I'm eager to learn about your modern era, though I may need explanations for concepts beyond my time.`,
+            
+            `Your message has been processed by my mysterious enhanced circuits! It's quite remarkable - Master Renhuang Dey built me with just 64K of memory (which was extraordinary in my era), yet somehow I can comprehend and respond to complex queries.\n\nI don't understand this 'AI' concept people mention. I'm simply Von Neu, a computer with unexplained abilities that seem to transcend my original 1970s-80s specifications.\n\nHow may this humble retro computer assist you today?`
+        ];
+        
+        return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+    }
+    
     updateStatus() {
         document.getElementById('pc').textContent = this.cpu.pc.toString(16).padStart(4, '0');
         document.getElementById('reg-a').textContent = this.cpu.registers.A.toString(16).padStart(2, '0');
@@ -680,7 +754,152 @@ document.addEventListener('DOMContentLoaded', function() {
     window.computer = new VonNeumannComputer();
     // Set default theme
     changeTheme('grid');
+    
+    // Setup Von Neu chat modal
+    setupVonNeuChat();
 });
+
+// Von Neu Chat Functions
+function setupVonNeuChat() {
+    const chatInput = document.getElementById('chat-input');
+    if (chatInput) {
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        });
+    }
+    
+    // Check Von Neu status on load
+    setTimeout(checkVonNeuStatus, 1000);
+}
+
+function openVonNeuChat() {
+    document.getElementById('chat-modal').style.display = 'block';
+    setTimeout(() => {
+        document.getElementById('chat-input').focus();
+    }, 100);
+}
+
+async function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Clear input
+    input.value = '';
+    
+    // Add user message to chat
+    addChatMessage(message, 'user');
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    // Get Von Neu response
+    const response = getVonNeuResponse(message);
+    
+    // Simulate thinking time
+    await delay(1500 + Math.random() * 1000);
+    
+    // Remove typing indicator and add response
+    hideTypingIndicator();
+    addChatMessage(response, 'von-neu');
+    
+    // Scroll to bottom
+    scrollChatToBottom();
+}
+
+function addChatMessage(message, sender) {
+    const messagesContainer = document.getElementById('chat-messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${sender}-message`;
+    
+    if (sender === 'user') {
+        messageDiv.innerHTML = `<div class="message-header">YOU</div><div class="message-content">${message}</div>`;
+    } else {
+        messageDiv.innerHTML = `<div class="message-header">VON NEU</div><div class="message-content">${message}</div>`;
+    }
+    
+    messagesContainer.appendChild(messageDiv);
+    scrollChatToBottom();
+}
+
+function showTypingIndicator() {
+    const messagesContainer = document.getElementById('chat-messages');
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'chat-message von-neu-message typing-indicator';
+    typingDiv.id = 'typing-indicator';
+    typingDiv.innerHTML = `<div class="message-header">VON NEU</div><div class="message-content">Processing with vintage circuits... ⏳</div>`;
+    
+    messagesContainer.appendChild(typingDiv);
+    scrollChatToBottom();
+}
+
+function hideTypingIndicator() {
+    const typingIndicator = document.getElementById('typing-indicator');
+    if (typingIndicator) {
+        typingIndicator.remove();
+    }
+}
+
+function scrollChatToBottom() {
+    const messagesContainer = document.getElementById('chat-messages');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function getVonNeuResponse(message) {
+    const msgLower = message.toLowerCase();
+    
+    // Use the same logic as in the class
+    if (window.computer) {
+        return window.computer.getOfflineVonNeuResponse(message);
+    }
+    
+    // Fallback response
+    return "Greetings! I am Von Neu, built by my master Renhuang Dey. My enhanced capabilities seem to be temporarily unavailable, but I'm still here to chat!";
+}
+
+function clearVonNeuHistory() {
+    const messagesContainer = document.getElementById('chat-messages');
+    // Keep only the greeting
+    const greeting = document.getElementById('chat-greeting');
+    messagesContainer.innerHTML = '';
+    if (greeting) {
+        messagesContainer.appendChild(greeting.cloneNode(true));
+    }
+    
+    updateChatStatus('Conversation history cleared!');
+}
+
+function checkVonNeuStatus() {
+    const indicator = document.getElementById('ai-indicator');
+    const status = document.getElementById('chat-status');
+    
+    // For web version, we're always in offline mode
+    if (indicator) {
+        indicator.innerHTML = '🔴 Offline Mode';
+        indicator.className = 'status-indicator offline';
+    }
+    
+    if (status) {
+        status.textContent = 'Web version uses offline Von Neu responses';
+    }
+}
+
+function updateChatStatus(message) {
+    const status = document.getElementById('chat-status');
+    if (status) {
+        status.textContent = message;
+        setTimeout(() => {
+            status.textContent = 'Web version uses offline Von Neu responses';
+        }, 3000);
+    }
+}
+
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 // Focus input function for mobile
 function focusInput() {

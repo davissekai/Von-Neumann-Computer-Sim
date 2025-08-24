@@ -975,3 +975,364 @@ body {
         text-align: center;
     }
 }
+
+/* ===== VON NEU AI CHAT STYLES ===== */
+
+/* Chat button in status panel */
+.chat-btn {
+    background: linear-gradient(135deg, #001100, #003300);
+    color: #00ff00;
+    border: 2px solid #00ff00;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 12px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    margin-bottom: 8px;
+    width: 100%;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.chat-btn:hover {
+    background: linear-gradient(135deg, #003300, #005500);
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+    transform: translateY(-2px);
+}
+
+.chat-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
+}
+
+/* AI Status Indicator */
+.ai-status {
+    margin-top: 8px;
+}
+
+.status-indicator {
+    font-size: 10px;
+    padding: 3px 6px;
+    border-radius: 3px;
+    text-align: center;
+    border: 1px solid #00ff00;
+    background: rgba(0, 255, 0, 0.1);
+}
+
+.status-indicator.offline {
+    border-color: #ff6600;
+    background: rgba(255, 102, 0, 0.1);
+    color: #ff6600;
+}
+
+/* Chat hint in quick help */
+.chat-hint {
+    color: #00ffff !important;
+    font-weight: bold;
+    padding: 2px 0;
+    border-top: 1px dotted #00ff00;
+    margin-top: 4px;
+    padding-top: 4px;
+}
+
+/* Chat Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+}
+
+.chat-content {
+    background: linear-gradient(135deg, #000000, #001100, #000000);
+    border: 3px solid #00ff00;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 800px;
+    height: 80%;
+    max-height: 600px;
+    margin: 5% auto;
+    box-shadow: 
+        0 0 30px rgba(0, 255, 0, 0.3),
+        inset 0 0 50px rgba(0, 255, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Chat Header */
+.chat-header {
+    background: linear-gradient(90deg, #001100, #003300, #001100);
+    border-bottom: 2px solid #00ff00;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 60px;
+}
+
+.chat-title {
+    display: flex;
+    flex-direction: column;
+}
+
+.von-neu-logo {
+    font-size: 18px;
+    font-weight: bold;
+    color: #00ff00;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+    letter-spacing: 2px;
+}
+
+.chat-subtitle {
+    font-size: 11px;
+    color: #80ff80;
+    margin-top: 2px;
+    font-style: italic;
+}
+
+.chat-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.chat-control-btn {
+    background: transparent;
+    border: 1px solid #00ff00;
+    color: #00ff00;
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.chat-control-btn:hover {
+    background: #00ff00;
+    color: #000;
+}
+
+.close {
+    color: #ff6600;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    margin-left: 10px;
+    transition: color 0.3s ease;
+}
+
+.close:hover {
+    color: #ff0000;
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+/* Chat Messages Area */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    font-family: 'Source Code Pro', monospace;
+    line-height: 1.4;
+}
+
+.von-neu-startup {
+    color: #00ff00;
+    font-size: 10px;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    text-align: center;
+    background: rgba(0, 255, 0, 0.05);
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 255, 0, 0.3);
+}
+
+.chat-message {
+    margin-bottom: 15px;
+    animation: messageSlide 0.3s ease-out;
+}
+
+.message-header {
+    font-size: 11px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.user-message .message-header {
+    color: #00ffff;
+}
+
+.von-neu-message .message-header {
+    color: #00ff00;
+}
+
+.message-content {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px 15px;
+    border-radius: 8px;
+    border-left: 3px solid;
+    white-space: pre-wrap;
+    font-size: 13px;
+}
+
+.user-message .message-content {
+    border-left-color: #00ffff;
+    background: rgba(0, 255, 255, 0.05);
+    color: #e0ffff;
+}
+
+.von-neu-message .message-content {
+    border-left-color: #00ff00;
+    background: rgba(0, 255, 0, 0.05);
+    color: #e0ffe0;
+}
+
+.typing-indicator .message-content {
+    font-style: italic;
+    opacity: 0.8;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes messageSlide {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+/* Chat Input Area */
+.chat-input-area {
+    border-top: 2px solid #00ff00;
+    background: linear-gradient(90deg, #001100, #002200, #001100);
+    padding: 15px 20px;
+}
+
+.chat-input-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.chat-prompt {
+    color: #00ffff;
+    font-weight: bold;
+    font-size: 14px;
+    min-width: 50px;
+}
+
+#chat-input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #00ff00;
+    border-radius: 5px;
+    padding: 8px 12px;
+    color: #00ff00;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+#chat-input:focus {
+    border-color: #00ffff;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.9);
+}
+
+#chat-input::placeholder {
+    color: #666;
+    font-style: italic;
+}
+
+.send-btn {
+    background: linear-gradient(135deg, #003300, #005500);
+    border: 2px solid #00ff00;
+    color: #00ff00;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    min-width: 50px;
+}
+
+.send-btn:hover {
+    background: linear-gradient(135deg, #005500, #007700);
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+    transform: scale(1.05);
+}
+
+.send-btn:active {
+    transform: scale(0.95);
+}
+
+.chat-status {
+    font-size: 10px;
+    color: #888;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Responsive Chat Styles */
+@media (max-width: 768px) {
+    .chat-content {
+        width: 95%;
+        height: 90%;
+        margin: 2.5% auto;
+    }
+    
+    .chat-header {
+        padding: 10px 15px;
+    }
+    
+    .von-neu-logo {
+        font-size: 16px;
+    }
+    
+    .chat-subtitle {
+        font-size: 10px;
+    }
+    
+    .chat-messages {
+        padding: 15px;
+    }
+    
+    .von-neu-startup {
+        font-size: 9px;
+    }
+    
+    .chat-input-area {
+        padding: 10px 15px;
+    }
+    
+    #chat-input {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+}
