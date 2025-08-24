@@ -226,8 +226,15 @@ FUN STUFF:
   hello        - Hello World message
   banner <text> - Create a text banner
   
+VON NEU AI CHAT:
+  chat <message>    - Chat with Von Neu AI
+  von-neu-status    - Check AI system status
+  von-neu-clear     - Clear conversation history
+  von-neu-greeting  - Show Von Neu's greeting
+  
 For detailed help on any command, type: help <command>
 Try 'demo' for a quick start or 'tutorial' to learn!
+NEW: Try 'chat Hello Von Neu' to meet your AI companion!
         """
         self.typewriter_print(help_text, delay=0.003, color="green")
         
