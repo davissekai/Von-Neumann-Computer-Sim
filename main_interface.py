@@ -130,6 +130,13 @@ class VonNeumannSimulator:
             'von-neu-status': self.cmd_von_neu_status,
             'von-neu-clear': self.cmd_von_neu_clear,
             'von-neu-greeting': self.cmd_von_neu_greeting,
+            
+            # Von Neu Chatroom Commands
+            'chat-new': self.cmd_chat_new_room,
+            'chat-switch': self.cmd_chat_switch_room,
+            'chat-list': self.cmd_chat_list_rooms,
+            'chat-delete': self.cmd_chat_delete_room,
+            'chat-clear': self.cmd_chat_clear_room,
         }
         
     def start(self):
@@ -1267,7 +1274,7 @@ For more commands, type 'help'
     # ===== VON NEU AI CHAT COMMANDS =====
     
     def cmd_chat(self, args: List[str]):
-        """Chat with Von Neu AI"""
+        """Chat with Von Neu AI in current chatroom"""
         if not self.von_neu_available:
             self.terminal.print_error("Von Neu AI is not available")
             self.terminal.print_info("Please check your API key configuration in .env file")
@@ -1277,11 +1284,18 @@ For more commands, type 'help'
         if not args:
             self.terminal.print_error("Usage: chat <your message>")
             self.terminal.print_info("Example: chat Hello Von Neu, how are you?")
+            # Show current room info
+            if self.von_neu:
+                status = self.von_neu.get_status()
+                self.terminal.print_info(f"Current chatroom: '{status['current_room']}' ({status['conversation_length']} messages)")
             return
             
         user_message = ' '.join(args)
         
-        # Show user's message
+        # Show current room and user's message
+        if self.von_neu:
+            status = self.von_neu.get_status()
+            self.terminal.print_info(f"[{status['current_room']}]")
         self.terminal.typewriter_print(f"YOU: {user_message}", color="cyan")
         self.terminal.print_info("Von Neu is thinking...")
         
@@ -1319,16 +1333,26 @@ For more commands, type 'help'
         
         # Model Info
         self.terminal.print_info(f"Model: {status['model']}")
+        self.terminal.print_info(f"Provider: {status['api_provider']}")
         
-        # Conversation Stats
-        self.terminal.print_info(f"Conversation History: {status['conversation_length']} exchanges")
+        # Memory Persistence
+        memory_status = "ENABLED" if status['memory_persistent'] else "NOT CREATED"
+        memory_color = "green" if status['memory_persistent'] else "yellow"
+        self.terminal.typewriter_print(f"Memory Persistence: {memory_status}", color=memory_color)
+        
+        # Chatroom Information
+        self.terminal.typewriter_print(f"Current Chatroom: {status['current_room']}", color="cyan")
+        self.terminal.print_info(f"Messages in Room: {status['conversation_length']} / {status['max_history_per_room']} max")
+        self.terminal.print_info(f"Total Chatrooms: {status['total_rooms']}")
+        if status['memory_persistent']:
+            self.terminal.print_info(f"Memory File: von_neu_chatrooms.json")
         self.terminal.print_info(f"Rate Limit Remaining: {status['rate_limit_remaining']} requests")
         
         # Von Neu Character Info
         self.terminal.typewriter_print("\nCharacter Profile:", color="cyan")
         self.terminal.print_info("• Era: 1970s-80s vintage computer")
-        self.terminal.print_info("• Creator: Renhuang Dey")
-        self.terminal.print_info("• Personality: Confused time traveler")
+        self.terminal.print_info("• Creator: Davis Dey (Renhuang)")
+        self.terminal.print_info("• Personality: Autonomous time traveler")
         self.terminal.print_info("• Knowledge: Pre-1980s computing only")
         
         self.terminal.show_separator()
@@ -1351,6 +1375,128 @@ For more commands, type 'help'
             
         greeting = self.von_neu.get_startup_greeting()
         self.terminal.typewriter_print(greeting, color="green", delay=0.02)
+        
+    # ===== VON NEU CHATROOM COMMANDS =====
+    
+    def cmd_chat_new_room(self, args: List[str]):
+        """Create a new chatroom"""
+        if not self.von_neu_available or not self.von_neu:
+            self.terminal.print_error("Von Neu AI is not available")
+            return
+            
+        if not args:
+            self.terminal.print_error("Usage: chat-new <room_name>")
+            self.terminal.print_info("Example: chat-new programming")
+            return
+            
+        room_name = '_'.join(args).lower()  # Join multiple words with underscores
+        
+        if self.von_neu.create_chatroom(room_name):
+            self.terminal.print_success(f"Created new chatroom: '{room_name}'")
+            self.terminal.print_info(f"Use 'chat-switch {room_name}' to enter it")
+        else:
+            self.terminal.print_error(f"Chatroom '{room_name}' already exists")
+            
+    def cmd_chat_switch_room(self, args: List[str]):
+        """Switch to a different chatroom"""
+        if not self.von_neu_available or not self.von_neu:
+            self.terminal.print_error("Von Neu AI is not available")
+            return
+            
+        if not args:
+            self.terminal.print_error("Usage: chat-switch <room_name>")
+            self.terminal.print_info("Use 'chat-list' to see available rooms")
+            return
+            
+        room_name = '_'.join(args).lower()
+        
+        if self.von_neu.switch_chatroom(room_name):
+            self.terminal.print_success(f"Switched to chatroom: '{room_name}'")
+            conversation = self.von_neu.get_current_conversation()
+            self.terminal.print_info(f"This room has {len(conversation)} messages")
+        else:
+            self.terminal.print_error(f"Chatroom '{room_name}' does not exist")
+            self.terminal.print_info(f"Use 'chat-new {room_name}' to create it")
+            
+    def cmd_chat_list_rooms(self, args: List[str]):
+        """List all chatrooms"""
+        if not self.von_neu_available or not self.von_neu:
+            self.terminal.print_error("Von Neu AI is not available")
+            return
+            
+        rooms_info = self.von_neu.list_chatrooms()
+        
+        self.terminal.show_separator()
+        self.terminal.typewriter_print("=== VON NEU CHATROOMS ===", color="yellow")
+        
+        if not rooms_info:
+            self.terminal.print_info("No chatrooms available")
+        else:
+            for room_name, info in rooms_info.items():
+                current_marker = " (CURRENT)" if info['is_current'] else ""
+                message_count = info['message_count']
+                last_msg = info['last_message']
+                
+                self.terminal.typewriter_print(f"• {room_name}{current_marker}", color="cyan")
+                self.terminal.print_info(f"  Messages: {message_count}")
+                if last_msg:
+                    # Show just the date part
+                    try:
+                        from datetime import datetime
+                        dt = datetime.fromisoformat(last_msg.replace('Z', '+00:00'))
+                        date_str = dt.strftime('%Y-%m-%d %H:%M')
+                        self.terminal.print_info(f"  Last activity: {date_str}")
+                    except:
+                        self.terminal.print_info(f"  Last activity: {last_msg[:19]}")
+                        
+        self.terminal.show_separator()
+        
+    def cmd_chat_delete_room(self, args: List[str]):
+        """Delete a chatroom"""
+        if not self.von_neu_available or not self.von_neu:
+            self.terminal.print_error("Von Neu AI is not available")
+            return
+            
+        if not args:
+            self.terminal.print_error("Usage: chat-delete <room_name>")
+            self.terminal.print_info("Use 'chat-list' to see available rooms")
+            return
+            
+        room_name = '_'.join(args).lower()
+        
+        # Confirm deletion
+        confirm = self.terminal.get_input(f"Delete chatroom '{room_name}'? (y/N): ")
+        if confirm.lower() != 'y':
+            self.terminal.print_info("Deletion cancelled")
+            return
+            
+        if self.von_neu.delete_chatroom(room_name):
+            self.terminal.print_success(f"Deleted chatroom: '{room_name}'")
+            # Show current room after deletion
+            status = self.von_neu.get_status()
+            self.terminal.print_info(f"Now in room: '{status['current_room']}'")
+        else:
+            self.terminal.print_error(f"Could not delete '{room_name}' (doesn't exist or is the last room)")
+            
+    def cmd_chat_clear_room(self, args: List[str]):
+        """Clear messages in current or specified chatroom"""
+        if not self.von_neu_available or not self.von_neu:
+            self.terminal.print_error("Von Neu AI is not available")
+            return
+            
+        room_name = '_'.join(args).lower() if args else None
+        target_room = room_name if room_name else self.von_neu.get_status()['current_room']
+        
+        # Confirm clearing
+        confirm = self.terminal.get_input(f"Clear all messages in '{target_room}'? (y/N): ")
+        if confirm.lower() != 'y':
+            self.terminal.print_info("Clear cancelled")
+            return
+            
+        if self.von_neu.clear_history(room_name):
+            self.terminal.print_success(f"Cleared chatroom: '{target_room}'")
+        else:
+            self.terminal.print_error(f"Could not clear '{target_room}' (room doesn't exist)")
 
 def main():
     """Main entry point"""
