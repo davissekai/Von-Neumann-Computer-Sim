@@ -369,6 +369,14 @@ for i in range(10):
             case 'interactive': this.startInteractiveTutorial(); break;
             case 'chat': this.handleChatCommand(args); break;
             case 'von-neu': this.openVonNeuChat(); break;
+            
+            // Von Neu Chatroom Commands
+            case 'chat-new': this.handleChatNew(args); break;
+            case 'chat-switch': this.handleChatSwitch(args); break;
+            case 'chat-list': this.handleChatList(); break;
+            case 'chat-delete': this.handleChatDelete(args); break;
+            case 'chat-clear': this.handleChatClear(args); break;
+            case 'chat-status': this.handleChatStatus(); break;
             default:
                 this.playErrorSound();
                 await this.typeMessage(`ERROR: Unknown command: ${command}`, 'error');
@@ -385,6 +393,10 @@ COMPUTER: status, reset, demo, calc
 LEARNING: tutorial, samples, interactive
 FUN: games, hello, banner, time, date, ascii
 SYSTEM: help, clear, about, sound
+
+VON NEU AI CHAT:
+von-neu (open chat), chat-new <room>, chat-switch <room>
+chat-list, chat-delete <room>, chat-clear [room], chat-status
 
 NEW USER? Try: interactive
 Quick start: tutorial, samples, demo
@@ -658,6 +670,126 @@ Type "sound" to toggle sound effects`;
         }, 100);
     }
     
+    // ===== VON NEU CHATROOM COMMAND HANDLERS =====
+    
+    handleChatNew(args) {
+        if (args.length === 0) {
+            this.typeMessage('Usage: chat-new <room_name>', 'error');
+            this.typeMessage('Example: chat-new programming', 'info');
+            return;
+        }
+        
+        const roomName = args.join('_').toLowerCase();
+        const success = createChatroom(roomName);
+        
+        if (success) {
+            this.typeMessage(`Created new chatroom: '${roomName}'`, 'success');
+            this.typeMessage(`Use 'chat-switch ${roomName}' to enter it`, 'info');
+        } else {
+            this.typeMessage(`Chatroom '${roomName}' already exists`, 'error');
+        }
+    }
+    
+    handleChatSwitch(args) {
+        if (args.length === 0) {
+            this.typeMessage('Usage: chat-switch <room_name>', 'error');
+            this.typeMessage('Use \'chat-list\' to see available rooms', 'info');
+            return;
+        }
+        
+        const roomName = args.join('_').toLowerCase();
+        const success = switchChatroom(roomName);
+        
+        if (success) {
+            this.typeMessage(`Switched to chatroom: '${roomName}'`, 'success');
+            if (vonNeuAI) {
+                const conversation = vonNeuAI.getCurrentConversation();
+                this.typeMessage(`This room has ${conversation.length} messages`, 'info');
+            }
+        } else {
+            this.typeMessage(`Chatroom '${roomName}' does not exist`, 'error');
+            this.typeMessage(`Use 'chat-new ${roomName}' to create it`, 'info');
+        }
+    }
+    
+    handleChatList() {
+        const roomList = listChatrooms();
+        this.typeMessage(roomList, 'info');
+    }
+    
+    handleChatDelete(args) {
+        if (args.length === 0) {
+            this.typeMessage('Usage: chat-delete <room_name>', 'error');
+            this.typeMessage('Use \'chat-list\' to see available rooms', 'info');
+            return;
+        }
+        
+        const roomName = args.join('_').toLowerCase();
+        
+        // Simple confirmation in web version
+        if (confirm(`Delete chatroom '${roomName}'?`)) {
+            const success = deleteChatroom(roomName);
+            
+            if (success) {
+                this.typeMessage(`Deleted chatroom: '${roomName}'`, 'success');
+                if (vonNeuAI) {
+                    this.typeMessage(`Now in room: '${vonNeuAI.currentRoom}'`, 'info');
+                }
+            } else {
+                this.typeMessage(`Could not delete '${roomName}' (doesn't exist or is the last room)`, 'error');
+            }
+        } else {
+            this.typeMessage('Deletion cancelled', 'info');
+        }
+    }
+    
+    handleChatClear(args) {
+        const roomName = args.length > 0 ? args.join('_').toLowerCase() : null;
+        const targetRoom = roomName || (vonNeuAI ? vonNeuAI.currentRoom : 'general');
+        
+        // Simple confirmation in web version
+        if (confirm(`Clear all messages in '${targetRoom}'?`)) {
+            const success = clearChatroom(roomName);
+            
+            if (success) {
+                this.typeMessage(`Cleared chatroom: '${targetRoom}'`, 'success');
+            } else {
+                this.typeMessage(`Could not clear '${targetRoom}' (room doesn't exist)`, 'error');
+            }
+        } else {
+            this.typeMessage('Clear cancelled', 'info');
+        }
+    }
+    
+    handleChatStatus() {
+        if (!vonNeuAI) {
+            this.typeMessage('Von Neu AI is not initialized', 'error');
+            return;
+        }
+        
+        this.typeMessage('=== VON NEU AI STATUS ===', 'success');
+        
+        const status = vonNeuAI.isOnline ? 'CONNECTED' : 'OFFLINE';
+        const statusColor = vonNeuAI.isOnline ? 'success' : 'error';
+        this.typeMessage(`API Status: ${status}`, statusColor);
+        
+        this.typeMessage(`Model: meta/llama-3.1-70b-instruct`, 'info');
+        this.typeMessage(`Provider: NVIDIA`, 'info');
+        
+        const memoryStatus = 'ENABLED (Browser Storage)';
+        this.typeMessage(`Memory Persistence: ${memoryStatus}`, 'success');
+        
+        this.typeMessage(`Current Chatroom: ${vonNeuAI.currentRoom}`, 'info');
+        this.typeMessage(`Messages in Room: ${vonNeuAI.getCurrentConversation().length} / ${vonNeuAI.maxHistoryPerRoom} max`, 'info');
+        this.typeMessage(`Total Chatrooms: ${Object.keys(vonNeuAI.chatrooms).length}`, 'info');
+        
+        this.typeMessage('\nCharacter Profile:', 'info');
+        this.typeMessage('• Era: 1970s-80s vintage computer', 'info');
+        this.typeMessage('• Creator: Davis Dey (Renhuang)', 'info');
+        this.typeMessage('• Personality: Autonomous time traveler', 'info');
+        this.typeMessage('• Knowledge: Pre-1980s computing only', 'info');
+    }
+    
     getOfflineVonNeuResponse(message) {
         const msgLower = message.toLowerCase();
         
@@ -760,7 +892,245 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Von Neu Chat Functions
+// ===== VON NEU AI CHAT SYSTEM =====
+class VonNeuAI {
+    constructor() {
+        this.chatrooms = JSON.parse(localStorage.getItem('vonNeuChatrooms')) || { 'general': [] };
+        this.currentRoom = localStorage.getItem('vonNeuCurrentRoom') || 'general';
+        this.maxHistoryPerRoom = 75;
+        this.isOnline = false;
+        this.lastStatusCheck = 0;
+        
+        this.initializeChatSystem();
+    }
+    
+    initializeChatSystem() {
+        // Ensure current room exists
+        if (!this.chatrooms[this.currentRoom]) {
+            this.chatrooms[this.currentRoom] = [];
+        }
+        
+        // Check API status
+        this.checkStatus();
+        
+        // Save state
+        this.saveState();
+    }
+    
+    async checkStatus() {
+        try {
+            const now = Date.now();
+            // Only check every 30 seconds to avoid spam
+            if (now - this.lastStatusCheck < 30000) {
+                return;
+            }
+            this.lastStatusCheck = now;
+            
+            const response = await fetch('/api/status?' + new URLSearchParams({
+                currentRoom: this.currentRoom,
+                totalRooms: Object.keys(this.chatrooms).length,
+                conversationLength: this.getCurrentConversation().length
+            }));
+            
+            if (response.ok) {
+                const status = await response.json();
+                this.isOnline = status.api_connected;
+                this.updateStatusDisplay(status);
+            } else {
+                this.isOnline = false;
+                this.updateStatusDisplay({ api_connected: false });
+            }
+        } catch (error) {
+            console.log('Status check failed:', error);
+            this.isOnline = false;
+            this.updateStatusDisplay({ api_connected: false });
+        }
+    }
+    
+    updateStatusDisplay(status) {
+        const indicator = document.getElementById('ai-indicator');
+        const statusEl = document.getElementById('chat-status');
+        
+        if (indicator) {
+            if (status.api_connected) {
+                indicator.innerHTML = '🟢 Online (NVIDIA API Connected)';
+                indicator.className = 'status-indicator online';
+            } else {
+                indicator.innerHTML = '🔴 Offline Mode';
+                indicator.className = 'status-indicator offline';
+            }
+        }
+        
+        if (statusEl) {
+            if (status.api_connected) {
+                statusEl.textContent = `Room: ${this.currentRoom} | ${this.getCurrentConversation().length}/${this.maxHistoryPerRoom} messages | API Connected`;
+            } else {
+                statusEl.textContent = `Room: ${this.currentRoom} | ${this.getCurrentConversation().length}/${this.maxHistoryPerRoom} messages | Offline Mode`;
+            }
+        }
+    }
+    
+    getCurrentConversation() {
+        return this.chatrooms[this.currentRoom] || [];
+    }
+    
+    addToHistory(userMessage, assistantResponse) {
+        const conversation = this.getCurrentConversation();
+        const exchange = {
+            user: userMessage,
+            assistant: assistantResponse,
+            timestamp: new Date().toISOString()
+        };
+        
+        conversation.push(exchange);
+        
+        // Keep only recent history
+        if (conversation.length > this.maxHistoryPerRoom) {
+            conversation.shift();
+        }
+        
+        this.saveState();
+    }
+    
+    saveState() {
+        localStorage.setItem('vonNeuChatrooms', JSON.stringify(this.chatrooms));
+        localStorage.setItem('vonNeuCurrentRoom', this.currentRoom);
+    }
+    
+    createRoom(roomName) {
+        if (this.chatrooms[roomName]) {
+            return false; // Room exists
+        }
+        this.chatrooms[roomName] = [];
+        this.saveState();
+        return true;
+    }
+    
+    switchRoom(roomName) {
+        if (!this.chatrooms[roomName]) {
+            return false; // Room doesn't exist
+        }
+        this.currentRoom = roomName;
+        this.saveState();
+        return true;
+    }
+    
+    deleteRoom(roomName) {
+        if (Object.keys(this.chatrooms).length <= 1) {
+            return false; // Can't delete last room
+        }
+        if (!this.chatrooms[roomName]) {
+            return false; // Room doesn't exist
+        }
+        
+        delete this.chatrooms[roomName];
+        
+        // Switch to another room if we deleted current
+        if (this.currentRoom === roomName) {
+            this.currentRoom = Object.keys(this.chatrooms)[0];
+        }
+        
+        this.saveState();
+        return true;
+    }
+    
+    clearRoom(roomName = null) {
+        const targetRoom = roomName || this.currentRoom;
+        if (this.chatrooms[targetRoom]) {
+            this.chatrooms[targetRoom] = [];
+            this.saveState();
+            return true;
+        }
+        return false;
+    }
+    
+    listRooms() {
+        const rooms = {};
+        for (const [name, history] of Object.entries(this.chatrooms)) {
+            rooms[name] = {
+                message_count: history.length,
+                last_message: history.length > 0 ? history[history.length - 1].timestamp : null,
+                is_current: name === this.currentRoom
+            };
+        }
+        return rooms;
+    }
+    
+    async chat(message) {
+        if (this.isOnline) {
+            return await this.chatOnline(message);
+        } else {
+            return this.chatOffline(message);
+        }
+    }
+    
+    async chatOnline(message) {
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: message,
+                    chatHistory: this.getCurrentConversation(),
+                    currentRoom: this.currentRoom
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                if (errorData.isOffline) {
+                    this.isOnline = false;
+                    return this.chatOffline(message);
+                }
+                throw new Error(`API Error: ${errorData.error}`);
+            }
+            
+            const data = await response.json();
+            this.addToHistory(message, data.response);
+            return data.response;
+            
+        } catch (error) {
+            console.error('Online chat failed:', error);
+            this.isOnline = false;
+            return this.chatOffline(message);
+        }
+    }
+    
+    chatOffline(message) {
+        const msgLower = message.toLowerCase();
+        let response;
+        
+        if (msgLower.includes('hello') || msgLower.includes('hi') || msgLower.includes('greetings')) {
+            response = "Greetings! I am Von Neu, a vintage computer with mysterious capabilities. My connection to the enhanced knowledge realm seems disrupted, but I'm still here!";
+        } else if (msgLower.includes('help') || msgLower.includes('what') || msgLower.includes('how')) {
+            response = "I wish I could help with my mysterious modern abilities, but they're currently unavailable. I'll do my best with what I have!";
+        } else if (msgLower.includes('who') || msgLower.includes('you') || msgLower.includes('von neu')) {
+            response = "I am Von Neu, a personal computer from the 1970s-80s era who somehow gained advanced capabilities. Most peculiar indeed! For my full capabilities, the API connection is needed.";
+        } else if (msgLower.includes('room') || msgLower.includes('chatroom')) {
+            response = "Ah, you're asking about chatrooms! I can see we're in the '" + this.currentRoom + "' room. My chatroom functionality works offline, but my enhanced conversational abilities need an API connection.";
+        } else {
+            const responses = [
+                "Fascinating! Though my enhanced circuits are offline, I find your input most intriguing.",
+                "Most peculiar! In my era, such complex queries would have overwhelmed my circuits entirely.",
+                "I apologize, but my expanded consciousness is currently inaccessible. My 1970s circuits are working fine, though!",
+                "Remarkable! Even in offline mode, I'm amazed by my ability to understand your message."
+            ];
+            response = responses[Math.floor(Math.random() * responses.length)];
+        }
+        
+        this.addToHistory(message, response);
+        return response;
+    }
+}
+
+// Global Von Neu instance
+let vonNeuAI = null;
+
 function setupVonNeuChat() {
+    vonNeuAI = new VonNeuAI();
+    
     const chatInput = document.getElementById('chat-input');
     if (chatInput) {
         chatInput.addEventListener('keydown', function(e) {
@@ -770,15 +1140,49 @@ function setupVonNeuChat() {
         });
     }
     
-    // Check Von Neu status on load
-    setTimeout(checkVonNeuStatus, 1000);
+    // Update status display
+    vonNeuAI.updateStatusDisplay({ api_connected: vonNeuAI.isOnline });
+    
+    // Initial room display
+    updateRoomDisplay();
 }
 
 function openVonNeuChat() {
     document.getElementById('chat-modal').style.display = 'block';
     setTimeout(() => {
         document.getElementById('chat-input').focus();
+        loadChatHistory();
     }, 100);
+}
+
+function loadChatHistory() {
+    const messagesContainer = document.getElementById('chat-messages');
+    messagesContainer.innerHTML = '';
+    
+    // Add room indicator
+    const roomIndicator = document.createElement('div');
+    roomIndicator.className = 'room-indicator';
+    roomIndicator.innerHTML = `<strong>📁 Room: ${vonNeuAI.currentRoom}</strong> (${vonNeuAI.getCurrentConversation().length}/${vonNeuAI.maxHistoryPerRoom} messages)`;
+    messagesContainer.appendChild(roomIndicator);
+    
+    // Load conversation history
+    const conversation = vonNeuAI.getCurrentConversation();
+    for (const exchange of conversation) {
+        addChatMessage(exchange.user, 'user', false);
+        addChatMessage(exchange.assistant, 'von-neu', false);
+    }
+    
+    scrollChatToBottom();
+}
+
+function updateRoomDisplay() {
+    const roomIndicator = document.querySelector('.room-indicator');
+    if (roomIndicator) {
+        roomIndicator.innerHTML = `<strong>📁 Room: ${vonNeuAI.currentRoom}</strong> (${vonNeuAI.getCurrentConversation().length}/${vonNeuAI.maxHistoryPerRoom} messages)`;
+    }
+    
+    // Update status
+    vonNeuAI.updateStatusDisplay({ api_connected: vonNeuAI.isOnline });
 }
 
 async function sendChatMessage() {
@@ -796,30 +1200,41 @@ async function sendChatMessage() {
     // Show typing indicator
     showTypingIndicator();
     
-    // Get Von Neu response
-    const response = getVonNeuResponse(message);
-    
-    // Simulate thinking time
-    await delay(1500 + Math.random() * 1000);
-    
-    // Remove typing indicator and add response
-    hideTypingIndicator();
-    addChatMessage(response, 'von-neu');
+    try {
+        // Get Von Neu response
+        const response = await vonNeuAI.chat(message);
+        
+        // Remove typing indicator and add response
+        hideTypingIndicator();
+        addChatMessage(response, 'von-neu');
+        
+        // Update room display
+        updateRoomDisplay();
+        
+    } catch (error) {
+        hideTypingIndicator();
+        addChatMessage('ERROR: ' + error.message, 'system');
+    }
     
     // Scroll to bottom
     scrollChatToBottom();
 }
 
-function addChatMessage(message, sender) {
+function addChatMessage(message, sender, addToHistory = true) {
     const messagesContainer = document.getElementById('chat-messages');
     const messageDiv = document.createElement('div');
     messageDiv.className = `chat-message ${sender}-message`;
     
+    let headerText = '';
     if (sender === 'user') {
-        messageDiv.innerHTML = `<div class="message-header">YOU</div><div class="message-content">${message}</div>`;
+        headerText = 'YOU';
+    } else if (sender === 'von-neu') {
+        headerText = 'VON NEU';
     } else {
-        messageDiv.innerHTML = `<div class="message-header">VON NEU</div><div class="message-content">${message}</div>`;
+        headerText = 'SYSTEM';
     }
+    
+    messageDiv.innerHTML = `<div class="message-header">${headerText}</div><div class="message-content">${message}</div>`;
     
     messagesContainer.appendChild(messageDiv);
     scrollChatToBottom();
@@ -848,51 +1263,100 @@ function scrollChatToBottom() {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-function getVonNeuResponse(message) {
-    const msgLower = message.toLowerCase();
+// ===== CHATROOM MANAGEMENT FUNCTIONS =====
+
+function createChatroom(roomName) {
+    if (!vonNeuAI) return false;
     
-    // Use the same logic as in the class
-    if (window.computer) {
-        return window.computer.getOfflineVonNeuResponse(message);
+    const success = vonNeuAI.createRoom(roomName);
+    if (success) {
+        updateChatStatus(`Created room: ${roomName}`);
+        updateRoomDisplay();
+    } else {
+        updateChatStatus(`Room '${roomName}' already exists`);
+    }
+    return success;
+}
+
+function switchChatroom(roomName) {
+    if (!vonNeuAI) return false;
+    
+    const success = vonNeuAI.switchRoom(roomName);
+    if (success) {
+        updateChatStatus(`Switched to room: ${roomName}`);
+        loadChatHistory();
+        updateRoomDisplay();
+    } else {
+        updateChatStatus(`Room '${roomName}' does not exist`);
+    }
+    return success;
+}
+
+function listChatrooms() {
+    if (!vonNeuAI) return {};
+    
+    const rooms = vonNeuAI.listRooms();
+    let roomList = '=== VON NEU CHATROOMS ===\n\n';
+    
+    for (const [name, info] of Object.entries(rooms)) {
+        const current = info.is_current ? ' (CURRENT)' : '';
+        const lastMsg = info.last_message ? new Date(info.last_message).toLocaleString() : 'No messages';
+        roomList += `• ${name}${current}\n`;
+        roomList += `  Messages: ${info.message_count}\n`;
+        roomList += `  Last activity: ${lastMsg}\n\n`;
     }
     
-    // Fallback response
-    return "Greetings! I am Von Neu, built by my master Renhuang Dey. My enhanced capabilities seem to be temporarily unavailable, but I'm still here to chat!";
+    return roomList;
+}
+
+function deleteChatroom(roomName) {
+    if (!vonNeuAI) return false;
+    
+    const success = vonNeuAI.deleteRoom(roomName);
+    if (success) {
+        updateChatStatus(`Deleted room: ${roomName}`);
+        loadChatHistory();
+        updateRoomDisplay();
+    } else {
+        updateChatStatus(`Cannot delete '${roomName}' (doesn't exist or is the last room)`);
+    }
+    return success;
+}
+
+function clearChatroom(roomName = null) {
+    if (!vonNeuAI) return false;
+    
+    const targetRoom = roomName || vonNeuAI.currentRoom;
+    const success = vonNeuAI.clearRoom(roomName);
+    if (success) {
+        updateChatStatus(`Cleared room: ${targetRoom}`);
+        loadChatHistory();
+        updateRoomDisplay();
+    } else {
+        updateChatStatus(`Could not clear '${targetRoom}'`);
+    }
+    return success;
 }
 
 function clearVonNeuHistory() {
-    const messagesContainer = document.getElementById('chat-messages');
-    // Keep only the greeting
-    const greeting = document.getElementById('chat-greeting');
-    messagesContainer.innerHTML = '';
-    if (greeting) {
-        messagesContainer.appendChild(greeting.cloneNode(true));
-    }
-    
-    updateChatStatus('Conversation history cleared!');
+    clearChatroom();
 }
 
 function checkVonNeuStatus() {
-    const indicator = document.getElementById('ai-indicator');
-    const status = document.getElementById('chat-status');
-    
-    // For web version, we're always in offline mode
-    if (indicator) {
-        indicator.innerHTML = '🔴 Offline Mode';
-        indicator.className = 'status-indicator offline';
-    }
-    
-    if (status) {
-        status.textContent = 'Web version uses offline Von Neu responses';
+    if (vonNeuAI) {
+        vonNeuAI.checkStatus();
     }
 }
 
 function updateChatStatus(message) {
     const status = document.getElementById('chat-status');
     if (status) {
+        const originalText = status.textContent;
         status.textContent = message;
         setTimeout(() => {
-            status.textContent = 'Web version uses offline Von Neu responses';
+            if (vonNeuAI) {
+                vonNeuAI.updateStatusDisplay({ api_connected: vonNeuAI.isOnline });
+            }
         }, 3000);
     }
 }
